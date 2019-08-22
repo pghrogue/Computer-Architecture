@@ -7,11 +7,13 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        pass
+        self.ram = [0] * 256
+        self.reg = [0] * 8
+        self.pc = 0
 
     def load(self):
         """Load a program into memory."""
-
+        print("DEBUG: CPU Load")
         address = 0
 
         # For now, we've just hardcoded a program:
@@ -26,11 +28,19 @@ class CPU:
             0b00000001, # HLT
         ]
 
+        print(f"DEBUG: Program: {program}")
+
         for instruction in program:
             self.ram[address] = instruction
             address += 1
 
 
+    def ram_read(self, MAR):
+        return self.ram[MAR]
+
+    def ram_write(self, MAR, MDR):
+        self.ram[MAR] = MDR
+        
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
