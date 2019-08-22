@@ -1,0 +1,30 @@
+File list:
+    [directory] examples - this contains sample programs to run later
+    
+    cpu.py - the processer behind the LS8 computer:
+        __init__(): TODO. Construct a new CPU. Setup memory & register
+            need to add:
+                ram[]
+                reg[]
+                pc
+                ram_read()
+                #fl
+                #ie
+
+        load(): BASIC. Loads a program into memory. Hardcoded now, will modify later.
+            class calls: 
+                self.ram[]
+
+        alu(op, reg_a, reg_b): BASIC. ALU operations. Will need to add more later
+            class calls:
+                self.reg[]
+
+        trace(): Prints out the CPU state, good for debugging.
+            class calls:
+                self.pc
+                #self.fl
+                #self.ie
+                self.ram_read
+                self.reg[]
+
+        run(): TODO: Run the pc
