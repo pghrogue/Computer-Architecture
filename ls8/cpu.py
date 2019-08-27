@@ -72,4 +72,8 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        IR = ram_read(self.pc)
+        operand_a = ram_read(self.pc + 1)
+        operand_b = ram_read(self.pc + 2)
+
+        # Perform the actions
