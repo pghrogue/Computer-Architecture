@@ -10,6 +10,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.halt = False
 
     def load(self):
         """Load a program into memory."""
@@ -71,9 +72,25 @@ class CPU:
         print()
 
     def run(self):
-        """Run the CPU."""
-        IR = ram_read(self.pc)
-        operand_a = ram_read(self.pc + 1)
-        operand_b = ram_read(self.pc + 2)
+        LDI = 0b10000010
+        PRN = 0b01000111
+        HLT = 0b00000001
 
+        """Run the CPU."""
+        
         # Perform the actions
+        while not self.halt:
+            IR = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            op_size = IR >> 6
+
+            if IR == LDI:
+                self.reg[operand_a] = operand_b
+            elif IR == PRN:
+                print(self.reg[operand_a])
+            elif IR == HLT:
+                self.halt = True
+
+            self.pc += op_size + 1
