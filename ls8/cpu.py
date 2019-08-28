@@ -1,9 +1,7 @@
 """CPU functionality."""
 import sys
+from dispatch import *
 
-LDI = 0b10000010
-PRN = 0b01000111
-HLT = 0b00000001
 
 class CPU:
     """Main CPU class."""
@@ -55,13 +53,19 @@ class CPU:
         # print(self.dispatchtable[IR])
         self.dispatchtable[IR](operand_a, operand_b)
 
-    def handle_alu(self, op, reg_a, reg_b):
+    def alu(self, IR):
         """ALU operations."""
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+        self.alutable = {}
+        self.alutable[MUL] = self.reg[operand_a] = self.reg[operand_a] * self.reg[operand_b]
 
-        if op == "ADD":
-            self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
-        else:
+        # if IR == "ADD":
+        #     self.reg[reg_a] += self.reg[reg_b]
+        # #elif op == "SUB": etc
+        try:
+            self.alutable[IR]
+        except:
             raise Exception("Unsupported ALU operation")
 
     def handle_ldi(self, operand_a, operand_b):
@@ -102,11 +106,28 @@ class CPU:
             IR = self.ram_read(self.pc)
             # operand_a = self.ram_read(self.pc + 1)
             # operand_b = self.ram_read(self.pc + 2)
+            
+            #ir_str = str(bin(IR))[2:]
+            ir_str = format(IR, '08b')
+            print(f"DEBUG: ir_str = {ir_str}")
 
-            op_size = IR >> 6
-            ins_set = ((IR >> 4) == 1)
+            # AAxxxxxx = operation size
+            op_size = int(ir_str[:2], 2)
+            print(f"DEBUG: op_size = {op_size}")
 
-            self.dispatch(IR)
+            # xxBxxxxx = alu operation
+            alu_set = (int(ir_str[2:3], 2) == 1)
+            print(f"DEBUG: alu_set = {alu_set}")
+
+            # xxxCxxxx = ins_set
+            ins_set = (int(ir_str[3:4], 2) == 1)
+            # ins_set = ((IR >> 4) == 1)
+            print(f"DEBUG: ins_set = {ins_set}")
+
+            if alu_set:
+                self.alu(IR)
+            else:
+                self.dispatch(IR)
             # if IR == LDI:
             #     self.reg[operand_a] = operand_b
             # elif IR == PRN:

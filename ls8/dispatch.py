@@ -2,28 +2,22 @@ LDI = 0b10000010
 PRN = 0b01000111
 HLT = 0b00000001
 
-class Dispatch:
 
-    def __init__(self, cpu):
-        self.cpu = cpu
-        self.dispatchtable = {}
-        self.dispatchtable[LDI] = self.handle_ldi
-        self.dispatchtable[PRN] = self.handle_prn
-        self.dispatchtable[HLT] = self.handle_hlt
+## ALU ops
+ADD = 0b10100000
+SUB = 0b10100001
+MUL = 0b10100010
+DIV = 0b10100011
+MOD = 0b10100100
 
-        
-    def handle_ldi(self, operand_a, operand_b):
-        cpu.reg[operand_a] = operand_b
+INC = 0b01100101
+DEC = 0b01100110
 
-    def handle_prn(self, operand_a, operand_b):
-        print(cpu.reg[operand_a])
+CMP = 0b10100111
 
-    def handle_hlt(self):
-        cpu.halt = True
-
-
-    def run(self, IR):
-        operand_a = cpu.ram_read(cpu.pc + 1)
-        operand_b = cpu.ram_read(cpu.pc + 2)
-
-        self.dispatchtable[IR](operand_a, operand_b)
+AND = 0b10101000
+NOT = 0b01101001
+OR = 0b10101010
+XOR = 0b10101011
+SHL = 0b10101100
+SHR = 0b10101101
