@@ -1,6 +1,9 @@
 """CPU functionality."""
-
 import sys
+
+LDI = 0b10000010
+PRN = 0b01000111
+HLT = 0b00000001
 
 class CPU:
     """Main CPU class."""
@@ -12,28 +15,26 @@ class CPU:
         self.pc = 0
         self.halt = False
 
-    def load(self):
+    def load(self, filename):
         """Load a program into memory."""
-        print("DEBUG: CPU Load")
+        # print("DEBUG: CPU Load")
         address = 0
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        with open(filename) as file:
+            for line in file:
+                # print(f"DEBUG: line = {line}")
+                if line == '':
+                    continue
 
-        print(f"DEBUG: Program: {program}")
+                first_bit = line[0]
+                # print(f"DEBUG: First bit: {line[0]}")
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+                if first_bit == "0" or first_bit == "1":
+                    self.ram[address] = int(line[:8], 2)
+                    # print(f"DEBUG: self.ram[{address}] = {line} = {int(line[:8], 2)}")
+                    address += 1
 
 
     def ram_read(self, MAR):
@@ -41,8 +42,20 @@ class CPU:
 
     def ram_write(self, MAR, MDR):
         self.ram[MAR] = MDR
-        
-    def alu(self, op, reg_a, reg_b):
+
+    def dispatch(self, IR):
+        self.dispatchtable = {}
+        self.dispatchtable[LDI] = self.handle_ldi
+        self.dispatchtable[PRN] = self.handle_prn
+        self.dispatchtable[HLT] = self.handle_hlt
+
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+
+        # print(self.dispatchtable[IR])
+        self.dispatchtable[IR](operand_a, operand_b)
+
+    def handle_alu(self, op, reg_a, reg_b):
         """ALU operations."""
 
         if op == "ADD":
@@ -50,6 +63,16 @@ class CPU:
         #elif op == "SUB": etc
         else:
             raise Exception("Unsupported ALU operation")
+
+    def handle_ldi(self, operand_a, operand_b):
+        self.reg[operand_a] = operand_b
+
+    def handle_prn(self, operand_a, operand_b):
+        print(self.reg[operand_a])
+
+    def handle_hlt(self, operand_a, operand_b):
+        self.halt = True
+
 
     def trace(self):
         """
@@ -72,25 +95,24 @@ class CPU:
         print()
 
     def run(self):
-        LDI = 0b10000010
-        PRN = 0b01000111
-        HLT = 0b00000001
-
         """Run the CPU."""
-        
+
         # Perform the actions
         while not self.halt:
             IR = self.ram_read(self.pc)
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
+            # operand_a = self.ram_read(self.pc + 1)
+            # operand_b = self.ram_read(self.pc + 2)
 
             op_size = IR >> 6
+            ins_set = ((IR >> 4) == 1)
 
-            if IR == LDI:
-                self.reg[operand_a] = operand_b
-            elif IR == PRN:
-                print(self.reg[operand_a])
-            elif IR == HLT:
-                self.halt = True
+            self.dispatch(IR)
+            # if IR == LDI:
+            #     self.reg[operand_a] = operand_b
+            # elif IR == PRN:
+            #     print(self.reg[operand_a])
+            # elif IR == HLT:
+            #     self.halt = True
 
-            self.pc += op_size + 1
+            if not ins_set:
+                self.pc += op_size + 1
